@@ -21,7 +21,6 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                // 确保 e.target 和 e.target.result 都不是 null
                 if (e.target && e.target.result) {
                     const encrypted = encryptFile(e.target.result as string, password);
                     setEncryptedData(encrypted);
@@ -73,10 +72,10 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
             >
                 Decrypt
             </button>
-            {isLoading && <p className="text-blue-500">处理中...</p>}
+            {isLoading && <p className="text-blue-500">Loading...</p>}
             {error && <p className="text-red-500">{error}</p>}
-            {encryptedData && <p className="text-green-500">加密数据: {encryptedData}</p>}
-            {decryptedData && <p className="text-green-500">解密数据: {decryptedData}</p>}
+            {encryptedData && <p className="text-green-500">Encrypted: {encryptedData}</p>}
+            {decryptedData && <p className="text-green-500">Decrypted: {decryptedData}</p>}
         </div>
     );
 };
