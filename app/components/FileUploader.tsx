@@ -51,7 +51,7 @@ const FileUploader: React.FC = () => {
         }
     };
 
-    const downloadEncryptedFile = (data, fileName) => {
+    const downloadEncryptedFile = (data: string, fileName: string) => {
         const blob = new Blob([data], { type: 'text/plain' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
