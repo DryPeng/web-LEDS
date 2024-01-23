@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { encryptFile, decryptFile } from '@lib/crypto-js';
 
-export const FileUploader: React.FC = () => {
+const FileUploader: React.FC = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [password, setPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
-    const [downloadQueue, setDownloadQueue] = useState<{ data: string; fileName: string; type: string }[]>([]);
+    const [downloadQueue, setDownloadQueue] = useState<{ data: Uint8Array; fileName: string; type: string }[]>([]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -36,11 +36,11 @@ export const FileUploader: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 if (e.target && e.target.result) {
-                    const encrypted = encryptFile(e.target.result as string, password);
+                    const encrypted = encryptFile(new Uint8Array(e.target.result as ArrayBuffer), password);
                     setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}`, type: file.type }]);
                 }
             };
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
         });
     };
 
@@ -49,17 +49,17 @@ export const FileUploader: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 if (e.target && e.target.result) {
-                    const decrypted = decryptFile(e.target.result as string, password);
+                    const decrypted = decryptFile(new Uint8Array(e.target.result as ArrayBuffer), password);
                     const newFileName = file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`;
                     setDownloadQueue(queue => [...queue, { data: decrypted, fileName: newFileName, type: file.type }]);
                 }
             };
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
         });
     };
 
-    const downloadFile = (item: { data: string; fileName: string; type: string }) => {
-        const blob = new Blob([item.data], { type: item.type || 'application/octet-stream' });
+    const downloadFile = (item: { data: Uint8Array; fileName: string; type: string }) => {
+        const blob = new Blob([item.data.buffer], { type: item.type || 'application/octet-stream' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = href;
