@@ -78,4 +78,4 @@ export const FileUploader: React.FC = () => {
             {decryptedData && <p className="text-green-500">Decrypted: {decryptedData}</p>}
         </div>
     );
-};
+}
