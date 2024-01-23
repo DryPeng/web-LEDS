@@ -33,7 +33,7 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
             }
         };
         reader.readAsText(selectedFile);
-    }
+    };
 
     const handleDecrypt = async () => {
         setIsLoading(true);
