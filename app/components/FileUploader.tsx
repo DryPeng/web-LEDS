@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { encryptFile, decryptFile } from '@lib/crypto-js';
+import { encryptFile, decryptFile } from '@lib/crypto-js'; 
 
-export const FileUploader: React.FC = () => {
+const FileUploader: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [password, setPassword] = useState<string>('');
     const [encryptedData, setEncryptedData] = useState<string>('');
@@ -15,35 +15,38 @@ export const FileUploader: React.FC = () => {
     };
 
     const handleEncrypt = async () => {
-    if (selectedFile) {
-        setIsLoading(true);
-        setError('');
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                if (e.target && e.target.result) {
-                    const encrypted = encryptFile(e.target.result as string, password);
-                    setEncryptedData(encrypted);
+        if (selectedFile && password) {
+            setIsLoading(true);
+            setError('');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    if (e.target && e.target.result) {
+                        const encrypted = encryptFile(e.target.result as string, password);
+                        setEncryptedData(encrypted);
+                    }
+                } catch (err) {
+                    setError('Error during encryption');
+                } finally {
+                    setIsLoading(false);
                 }
-            } catch (err) {
-                setError('error-E');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        reader.readAsText(selectedFile);
+            };
+            reader.readAsText(selectedFile);
+        }
     };
 
     const handleDecrypt = async () => {
-        setIsLoading(true);
-        setError('');
-        try {
-            const decrypted = decryptFile(encryptedData, password);
-            setDecryptedData(decrypted);
-        } catch (err) {
-            setError('Error');
-        } finally {
-            setIsLoading(false);
+        if (encryptedData && password) {
+            setIsLoading(true);
+            setError('');
+            try {
+                const decrypted = decryptFile(encryptedData, password);
+                setDecryptedData(decrypted);
+            } catch (err) {
+                setError('Error during decryption');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -78,4 +81,6 @@ export const FileUploader: React.FC = () => {
             {decryptedData && <p className="text-green-500">Decrypted: {decryptedData}</p>}
         </div>
     );
-}
+};
+
+export default FileUploader;
