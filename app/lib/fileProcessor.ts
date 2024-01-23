@@ -1,6 +1,6 @@
 // fileProcessor.ts
 
-import { encryptFile, decryptFile } from '@lib/crypto-js';
+import CryptoJS from 'crypto-js';
 
 export class FileProcessor {
   private file: File;
