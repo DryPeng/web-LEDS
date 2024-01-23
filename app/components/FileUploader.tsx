@@ -4,8 +4,7 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
 const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
     let binary = '';
     const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < bytes.byteLength; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
@@ -21,14 +20,12 @@ const base64ToArrayBuffer = (base64: string) => {
     return bytes.buffer;
 };
 
-// 在 handleEncrypt 和 handleDecrypt 中使用这些转换函数
-
 const FileUploader: React.FC = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [password, setPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
-    const [downloadQueue, setDownloadQueue] = useState<{ data: Uint8Array; fileName: string; type: string }[]>([]);
+    const [downloadQueue, setDownloadQueue] = useState<{ data: string; fileName: string; type: string }[]>([]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -58,7 +55,8 @@ const FileUploader: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 if (e.target && e.target.result) {
-                    const encrypted = encryptFile(new Uint8Array(e.target.result as ArrayBuffer), password);
+                    const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
+                    const encrypted = encryptFile(base64, password);
                     setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}`, type: file.type }]);
                 }
             };
@@ -71,7 +69,9 @@ const FileUploader: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 if (e.target && e.target.result) {
-                    const decrypted = decryptFile(new Uint8Array(e.target.result as ArrayBuffer), password);
+                    const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
+                    const decryptedBase64 = decryptFile(base64, password);
+                    const decrypted = base64ToArrayBuffer(decryptedBase64);
                     const newFileName = file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`;
                     setDownloadQueue(queue => [...queue, { data: decrypted, fileName: newFileName, type: file.type }]);
                 }
@@ -80,8 +80,8 @@ const FileUploader: React.FC = () => {
         });
     };
 
-    const downloadFile = (item: { data: Uint8Array; fileName: string; type: string }) => {
-        const blob = new Blob([item.data.buffer], { type: item.type || 'application/octet-stream' });
+    const downloadFile = (item: { data: ArrayBuffer; fileName: string; type: string }) => {
+        const blob = new Blob([item.data], { type: item.type || 'application/octet-stream' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = href;
@@ -93,7 +93,7 @@ const FileUploader: React.FC = () => {
     };
 
     const handleDownloadQueue = () => {
-        downloadQueue.forEach(downloadFile);
+        downloadQueue.forEach(item => downloadFile({ data: base64ToArrayBuffer(item.data), fileName: item.fileName, type: item.type }));
         setDownloadQueue([]);
     };
 
