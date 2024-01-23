@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { encryptFile, decryptFile } from '@lib/crypto-js'; 
+import { encryptFile, decryptFile } from '@lib/crypto-js'; // 确保正确导入加密解密函数
 
 const FileUploader: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -24,6 +24,7 @@ const FileUploader: React.FC = () => {
                     if (e.target && e.target.result) {
                         const encrypted = encryptFile(e.target.result as string, password);
                         setEncryptedData(encrypted);
+                        downloadEncryptedFile(encrypted, 'encrypted.txt');
                     }
                 } catch (err) {
                     setError('Error during encryption');
@@ -50,27 +51,39 @@ const FileUploader: React.FC = () => {
         }
     };
 
+    const downloadEncryptedFile = (data, fileName) => {
+        const blob = new Blob([data], { type: 'text/plain' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(href);
+    };
+
     return (
         <div className="p-4">
             <input className="border p-2 mb-2" type="file" onChange={handleFileInput} />
             {selectedFile && <p className="text-sm mb-2">File: {selectedFile.name}</p>}
-            <input 
+            <input
                 className="border p-2 mb-2"
-                type="password" 
-                placeholder="Password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
             />
-            <button 
+            <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                onClick={handleEncrypt} 
+                onClick={handleEncrypt}
                 disabled={isLoading}
             >
                 Encrypt
             </button>
-            <button 
+            <button
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                onClick={handleDecrypt} 
+                onClick={handleDecrypt}
                 disabled={isLoading}
             >
                 Decrypt
