@@ -49,21 +49,34 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
     };
 
     return (
-        <div>
-            <input type="file" onChange={handleFileInput} />
-            {selectedFile && <p>Selected: {selectedFile.name}</p>}
+        <div className="p-4">
+            <input className="border p-2 mb-2" type="file" onChange={handleFileInput} />
+            {selectedFile && <p className="text-sm mb-2">File: {selectedFile.name}</p>}
             <input 
+                className="border p-2 mb-2"
                 type="password" 
                 placeholder="Password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
             />
-            <button onClick={handleEncrypt} disabled={isLoading}>Encrypt</button>
-            <button onClick={handleDecrypt} disabled={isLoading}>Decrypt</button>
-            {isLoading && <p>Loading...</p>}
+            <button 
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                onClick={handleEncrypt} 
+                disabled={isLoading}
+            >
+                Encrypt
+            </button>
+            <button 
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleDecrypt} 
+                disabled={isLoading}
+            >
+                Decrypt
+            </button>
+            {isLoading && <p className="text-blue-500">处理中...</p>}
             {error && <p className="text-red-500">{error}</p>}
-            {encryptedData && <p>Encrypted: {encryptedData}</p>}
-            {decryptedData && <p>Decrypted: {decryptedData}</p>}
+            {encryptedData && <p className="text-green-500">加密数据: {encryptedData}</p>}
+            {decryptedData && <p className="text-green-500">解密数据: {decryptedData}</p>}
         </div>
     );
 };
