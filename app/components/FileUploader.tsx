@@ -35,8 +35,10 @@ export const FileUploader: React.FC = () => {
         await processFiles(async (file) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const encrypted = encryptFile(e.target.result as string, password);
-                setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}` }]);
+                if (e.target && e.target.result) {
+                    const encrypted = encryptFile(e.target.result as string, password);
+                    setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}` }]);
+                }
             };
             reader.readAsText(file);
         });
@@ -46,8 +48,11 @@ export const FileUploader: React.FC = () => {
         await processFiles(async (file) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const decrypted = decryptFile(e.target.result as string, password);
-                setDownloadQueue(queue => [...queue, { data: decrypted, fileName: file.name.replace(/^encrypted-/, '') }]);
+                if (e.target && e.target.result) {
+                    const decrypted = decryptFile(e.target.result as string, password);
+                    const newFileName = file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`;
+                    setDownloadQueue(queue => [...queue, { data: decrypted, fileName: newFileName }]);
+                }
             };
             reader.readAsText(file);
         });
