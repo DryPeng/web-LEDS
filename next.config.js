@@ -1,4 +1,9 @@
 const nextConfig = {
 };
 
-module.exports = nextConfig;
+module.exports = 
+  exportPathMap: async function(defaultPathMap) {
+    return {
+      '/': { page: '/' },
+    };
+  };
