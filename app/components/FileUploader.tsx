@@ -15,25 +15,25 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
     };
 
     const handleEncrypt = async () => {
-        if (selectedFile) {
-            setIsLoading(true);
-            setError('');
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    if (e.target.result) {
-                        const encrypted = encryptFile(e.target.result as string, password);
-                        setEncryptedData(encrypted);
-                    }
-                } catch (err) {
-                    setError('Error');
-                } finally {
-                    setIsLoading(false);
+    if (selectedFile) {
+        setIsLoading(true);
+        setError('');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                // 确保 e.target 和 e.target.result 都不是 null
+                if (e.target && e.target.result) {
+                    const encrypted = encryptFile(e.target.result as string, password);
+                    setEncryptedData(encrypted);
                 }
-            };
-            reader.readAsText(selectedFile);
-        }
-    };
+            } catch (err) {
+                setError('error-E');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        reader.readAsText(selectedFile);
+    }
 
     const handleDecrypt = async () => {
         setIsLoading(true);
