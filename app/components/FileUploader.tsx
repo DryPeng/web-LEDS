@@ -1,84 +1,78 @@
 import React, { useState } from 'react';
 import { encryptFile, decryptFile } from '@lib/crypto-js';
 
-const FileUploader: React.FC = () => {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [originalFileName, setOriginalFileName] = useState<string>('');
+export const FileUploader: React.FC = () => {
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [password, setPassword] = useState<string>('');
-    const [encryptedData, setEncryptedData] = useState<string>('');
-    const [decryptedData, setDecryptedData] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
+    const [downloadQueue, setDownloadQueue] = useState<{ data: string; fileName: string }[]>([]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files ? e.target.files[0] : null;
-        setSelectedFile(file);
-        if (file) {
-            setOriginalFileName(file.name); // Save file name
+        if (e.target.files) {
+            const filesArray = Array.from(e.target.files);
+            setSelectedFiles(filesArray);
         }
+    };
+
+    const processFiles = async (processFunction: (file: File) => Promise<void>) => {
+        setIsLoading(true);
+        setError('');
+
+        for (let file of selectedFiles) {
+            try {
+                await processFunction(file);
+            } catch (err) {
+                setError(`Error processing file ${file.name}: ${err}`);
+                break;
+            }
+        }
+
+        setIsLoading(false);
     };
 
     const handleEncrypt = async () => {
-        if (selectedFile && password) {
-            setIsLoading(true);
-            setError('');
+        await processFiles(async (file) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                try {
-                    if (e.target && e.target.result) {
-                        const encrypted = encryptFile(e.target.result as string, password);
-                        setEncryptedData(encrypted);
-                        downloadFile(encrypted, `encrypted-${originalFileName}`);
-                    }
-                } catch (err) {
-                    setError('Error during encryption');
-                } finally {
-                    setIsLoading(false);
-                }
+                const encrypted = encryptFile(e.target.result as string, password);
+                setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}` }]);
             };
-            reader.readAsText(selectedFile);
-        }
+            reader.readAsText(file);
+        });
     };
 
     const handleDecrypt = async () => {
-        if (encryptedData && password) {
-            setIsLoading(true);
-            setError('');
-            try {
-                const decrypted = decryptFile(encryptedData, password);
-                setDecryptedData(decrypted);
-                downloadFile(decrypted, originalFileName); // Use file name
-            } catch (err) {
-                setError('Error during decryption');
-            } finally {
-                setIsLoading(false);
-            }
-        }
+        await processFiles(async (file) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const decrypted = decryptFile(e.target.result as string, password);
+                setDownloadQueue(queue => [...queue, { data: decrypted, fileName: file.name.replace(/^encrypted-/, '') }]);
+            };
+            reader.readAsText(file);
+        });
     };
 
     const downloadFile = (data: string, fileName: string) => {
-        let processedFileName = fileName;
-        if (fileName.startsWith('encrypted-')) {
-            processedFileName = fileName.replace('encrypted-', '');
-        } else if (!fileName.startsWith('decrypted-')) {
-            processedFileName = `decrypted-${fileName}`;
-        }
-
         const blob = new Blob([data], { type: 'text/plain' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = href;
-        link.download = processedFileName;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(href);
     };
 
+    const handleDownloadQueue = () => {
+        downloadQueue.forEach(item => downloadFile(item.data, item.fileName));
+        setDownloadQueue([]);
+    };
+
     return (
         <div className="p-4">
-            <input className="border p-2 mb-2" type="file" onChange={handleFileInput} />
-            {selectedFile && <p className="text-sm mb-2">File: {selectedFile.name}</p>}
+            <input className="border p-2 mb-2" type="file" multiple onChange={handleFileInput} />
             <input
                 className="border p-2 mb-2"
                 type="password"
@@ -100,10 +94,15 @@ const FileUploader: React.FC = () => {
             >
                 Decrypt
             </button>
-            {isLoading && <p className="text-blue-500">Loading...</p>}
+            <button
+                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleDownloadQueue}
+                disabled={downloadQueue.length === 0}
+            >
+                Download Queue
+            </button>
+            {isLoading && <p className="text-blue-500">Processing...</p>}
             {error && <p className="text-red-500">{error}</p>}
-            {encryptedData && <p className="text-green-500">Encrypted: {encryptedData}</p>}
-            {decryptedData && <p className="text-green-500">Decrypted: {decryptedData}</p>}
         </div>
     );
 };
