@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { encryptFile, decryptFile } from '@lib/crypto-js';
 
- const FileUploader: React.FC = () => {
+export const FileUploader: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [password, setPassword] = useState<string>('');
     const [encryptedData, setEncryptedData] = useState<string>('');
@@ -79,5 +79,3 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
         </div>
     );
 };
-
-export default FileUploader;
