@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { encryptFile, decryptFile } from '@lib/crypto-js'; // 确保正确导入加密解密函数
+import { encryptFile, decryptFile } from '@lib/crypto-js';
 
 const FileUploader: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -24,7 +24,7 @@ const FileUploader: React.FC = () => {
                     if (e.target && e.target.result) {
                         const encrypted = encryptFile(e.target.result as string, password);
                         setEncryptedData(encrypted);
-                        downloadEncryptedFile(encrypted, 'encrypted.txt');
+                        downloadFile(encrypted, 'encrypted.txt');
                     }
                 } catch (err) {
                     setError('Error during encryption');
@@ -43,6 +43,7 @@ const FileUploader: React.FC = () => {
             try {
                 const decrypted = decryptFile(encryptedData, password);
                 setDecryptedData(decrypted);
+                downloadFile(decrypted, 'decrypted.txt');
             } catch (err) {
                 setError('Error during decryption');
             } finally {
@@ -51,7 +52,7 @@ const FileUploader: React.FC = () => {
         }
     };
 
-    const downloadEncryptedFile = (data: string, fileName: string) => {
+    const downloadFile = (data: string, fileName: string) => {
         const blob = new Blob([data], { type: 'text/plain' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
