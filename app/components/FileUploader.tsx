@@ -3,6 +3,7 @@ import { encryptFile, decryptFile } from '@lib/crypto-js';
 
 const FileUploader: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [originalFileName, setOriginalFileName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [encryptedData, setEncryptedData] = useState<string>('');
     const [decryptedData, setDecryptedData] = useState<string>('');
@@ -12,6 +13,9 @@ const FileUploader: React.FC = () => {
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
         setSelectedFile(file);
+        if (file) {
+            setOriginalFileName(file.name); // Save file name
+        }
     };
 
     const handleEncrypt = async () => {
@@ -24,7 +28,7 @@ const FileUploader: React.FC = () => {
                     if (e.target && e.target.result) {
                         const encrypted = encryptFile(e.target.result as string, password);
                         setEncryptedData(encrypted);
-                        downloadFile(encrypted, 'encrypted.txt');
+                        downloadFile(encrypted, `encrypted-${originalFileName}`);
                     }
                 } catch (err) {
                     setError('Error during encryption');
@@ -43,7 +47,7 @@ const FileUploader: React.FC = () => {
             try {
                 const decrypted = decryptFile(encryptedData, password);
                 setDecryptedData(decrypted);
-                downloadFile(decrypted, 'decrypted.txt');
+                downloadFile(decrypted, originalFileName); // Use file name
             } catch (err) {
                 setError('Error during decryption');
             } finally {
@@ -53,11 +57,18 @@ const FileUploader: React.FC = () => {
     };
 
     const downloadFile = (data: string, fileName: string) => {
+        let processedFileName = fileName;
+        if (fileName.startsWith('encrypted-')) {
+            processedFileName = fileName.replace('encrypted-', '');
+        } else if (!fileName.startsWith('decrypted-')) {
+            processedFileName = `decrypted-${fileName}`;
+        }
+
         const blob = new Blob([data], { type: 'text/plain' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = href;
-        link.download = fileName;
+        link.download = processedFileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
