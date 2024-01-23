@@ -1,5 +1,5 @@
 import React from 'react';
-import FileUploader from '@components/FileUploader';
+import { FileUploader } from '@components/FileUploader';
 
 const Home: React.FC = () => {
   return (
