@@ -36,20 +36,25 @@ const FileUploader: React.FC = () => {
         }
     };
 
-    const processFiles = async (processFunction: (file: File) => Promise<void>) => {
-        setIsLoading(true);
-        setError('');
+    const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
+        const fileProcessor = new FileProcessor(file);
+        const chunks = fileProcessor.getChunks();
+        let processedChunks: ArrayBuffer[] = [];
 
-        for (let file of selectedFiles) {
-            try {
-                await processFunction(file);
-            } catch (err) {
-                setError(`Error processing file ${file.name}: ${err}`);
-                break;
-            }
+        for (let i = 0; i < chunks.length; i++) {
+            const processedChunk = await processChunk(chunks[i]);
+            processedChunks.push(processedChunk);
+            setProgress((i + 1) / chunks.length * 100);
         }
 
-        setIsLoading(false);
+        return processedChunks;
+    };
+
+    const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
+        const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
+        const href = URL.createObjectURL(blob);
+    
+        setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
     };
 
     const handleEncrypt = async () => {
@@ -82,21 +87,26 @@ const FileUploader: React.FC = () => {
         });
     };
 
-    const downloadFile = (item: { data: ArrayBuffer; fileName: string; type: string }) => {
-        const blob = new Blob([item.data], { type: item.type || 'application/octet-stream' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = item.fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
+    const handleDownloadQueue = () => {
+        downloadQueue.forEach(item => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(item.data);
+            link.download = item.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        });
+    
+        // 清空下载队列
+        setDownloadQueue([]);
     };
 
-    const handleDownloadQueue = () => {
-        downloadQueue.forEach(downloadFile);
-        setDownloadQueue([]);
+    const progressBarStyle = {
+        width: `${progress}%`,
+        backgroundColor: 'blue',
+        height: '5px',
+        transition: 'width 0.5s ease-in-out'
     };
 
     return (
