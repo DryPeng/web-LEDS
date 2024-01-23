@@ -77,16 +77,14 @@ const FileUploader: React.FC = () => {
             reader.onload = async (e) => {
                 if (e.target && e.target.result) {
                     const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
-                    const decryptedBase64 = decryptFile(base64, password);
-                    const decrypted = base64ToArrayBuffer(decryptedBase64);
-                    const newFileName = file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`;
-                    setDownloadQueue(queue => [...queue, { data: decrypted, fileName: newFileName, type: file.type }]);
+                    const decryptedBase64 = decryptFile(base64, password); // 解密文件
+                    setDownloadQueue(queue => [...queue, { data: base64ToArrayBuffer(decryptedBase64), fileName: file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`, type: file.type }]);
                 }
             };
             reader.readAsArrayBuffer(file);
         });
     };
-
+    
     const handleDownloadQueue = () => {
         downloadQueue.forEach(item => {
             const link = document.createElement('a');
