@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { encryptFile, decryptFile } from '@lib/crypto-js';
+import { FileProcessor } from '@lib/fileProcessor';
 
 const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
     let binary = '';
@@ -26,6 +27,7 @@ const FileUploader: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [downloadQueue, setDownloadQueue] = useState<{ data: ArrayBuffer; fileName: string; type: string }[]>([]);
+    const [progress, setProgress] = useState<number>(0);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {

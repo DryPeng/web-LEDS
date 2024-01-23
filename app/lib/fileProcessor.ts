@@ -1,5 +1,7 @@
 // fileProcessor.ts
 
+import { encryptFile, decryptFile } from '@lib/crypto-js';
+
 export class FileProcessor {
   private file: File;
   private chunkSize: number;
