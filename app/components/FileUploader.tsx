@@ -25,7 +25,7 @@ const FileUploader: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
-    const [downloadQueue, setDownloadQueue] = useState<{ data: string; fileName: string; type: string }[]>([]);
+    const [downloadQueue, setDownloadQueue] = useState<{ data: ArrayBuffer; fileName: string; type: string }[]>([]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -57,7 +57,7 @@ const FileUploader: React.FC = () => {
                 if (e.target && e.target.result) {
                     const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
                     const encrypted = encryptFile(base64, password);
-                    setDownloadQueue(queue => [...queue, { data: encrypted, fileName: `encrypted-${file.name}`, type: file.type }]);
+                    setDownloadQueue(queue => [...queue, { data: base64ToArrayBuffer(encrypted), fileName: `encrypted-${file.name}`, type: file.type }]);
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -93,9 +93,29 @@ const FileUploader: React.FC = () => {
     };
 
     const handleDownloadQueue = () => {
-        downloadQueue.forEach(item => downloadFile({ data: base64ToArrayBuffer(item.data), fileName: item.fileName, type: item.type }));
+        downloadQueue.forEach(downloadFile);
         setDownloadQueue([]);
     };
+
+    return (
+        <div className="p-4">
+            <input className="border p-2 mb-2" type="file" multiple onChange={handleFileInput} />
+            <input
+                className="border p-2 mb-2"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                onClick={handleEncrypt}
+                disabled={isLoading}
+            >
+                Encrypt
+            </button>
+            <button
+                className="bg-green-500
 
     return (
         <div className="p-4">
