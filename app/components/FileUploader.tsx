@@ -76,6 +76,21 @@ const FileUploader: React.FC = () => {
         });
     };
 
+    const processFiles = async (processFunction: (file: File) => Promise<void>) => {
+        setIsLoading(true);
+        setError('');
+
+        try {
+            for (const file of selectedFiles) {
+                await processFunction(file);
+            }
+        } catch (err) {
+            setError(`Error processing file: ${err}`);
+        }
+
+        setIsLoading(false);
+    };
+
     const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
         const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
         setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
