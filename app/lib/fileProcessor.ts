@@ -40,16 +40,16 @@ export class FileProcessor {
   async encryptChunk(chunk: Blob, password: string): Promise<ArrayBuffer> {
     const arrayBuffer = await this.blobToArrayBuffer(chunk);
     const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
-    const encrypted = CryptoJS.AES.encrypt(wordArray, password).toString();
-    return CryptoJS.enc.Base64.parse(encrypted).toString(CryptoJS.enc.Utf8);
+    const encrypted = CryptoJS.AES.encrypt(wordArray, password).ciphertext;
+    return encrypted.toString(CryptoJS.enc.Base64);
   }
-
+  
   // Decrypt
   async decryptChunk(chunk: Blob, password: string): Promise<ArrayBuffer> {
     const arrayBuffer = await this.blobToArrayBuffer(chunk);
     const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
-    const decrypted = CryptoJS.AES.decrypt(wordArray, password).toString(CryptoJS.enc.Utf8);
-    return CryptoJS.enc.Base64.parse(decrypted).toString(CryptoJS.enc.Utf8);
+    const decrypted = CryptoJS.AES.decrypt({ ciphertext: wordArray }, password);
+    return decrypted.toString(CryptoJS.enc.Base64);
   }
 
   public async processFile(processChunk: (chunk: Blob) => Promise<ArrayBuffer>): Promise<ArrayBuffer[]> {
