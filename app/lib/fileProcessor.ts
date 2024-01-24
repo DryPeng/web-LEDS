@@ -12,7 +12,7 @@ export class FileProcessor {
     this.chunkSize = chunkSize;
   }
 
-  private getChunks() {
+  public getChunks() {
     const chunks = [];
     let currentPos = 0;
 
