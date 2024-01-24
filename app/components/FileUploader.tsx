@@ -40,12 +40,11 @@ const FileUploader: React.FC = () => {
         const fileProcessor = new FileProcessor(file);
         const processedChunksArray = await fileProcessor.processFile(processChunk);
     
-        for (let i = 0; i < chunks.length; i++) {
-            const processedChunk = await processChunk(chunks[i]);
-            processedChunksArray.push(processedChunk);
-            setProgress((i + 1) / chunks.length * 100);
+        for (let i = 0; i < processedChunksArray.length; i++) {
+
+            setProgress((i + 1) / processedChunksArray.length * 100);
         }
-    
+       
         return processedChunksArray;
     };
     
