@@ -124,8 +124,9 @@ const FileUploader: React.FC = () => {
                 const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
                 const encrypted = encryptFile(base64, password);
 
-                // 将加密后的数据转换为 Blob 而不是 ArrayBuffer
-                const encryptedBlob = new Blob([base64ToArrayBuffer(encrypted)], { type: file.type });
+                const encryptedData = base64ToArrayBuffer(encrypted);
+                const encryptedBlob = new Blob([encryptedData], { type: file.type });
+
                 setDownloadQueue(queue => [...queue, { data: encryptedBlob, fileName: `encrypted-${file.name}`, type: file.type }]);
             }
         };
