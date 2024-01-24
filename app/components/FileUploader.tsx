@@ -51,40 +51,39 @@ const FileUploader: React.FC = () => {
         setIsLoading(false);
     };
 
-    const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
+    const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob, processor: FileProcessor) => Promise<ArrayBuffer>) => {
         const fileProcessor = new FileProcessor(file);
-        const processedChunksArray = await fileProcessor.processFile(processChunk);
+        const processedChunksArray = [];
     
-        for (let i = 0; i < processedChunksArray.length; i++) {
-            setProgress((i + 1) / processedChunksArray.length * 100);
+        for (const chunk of fileProcessor.getChunks()) {
+            const processedChunk = await processChunk(chunk, fileProcessor);
+            processedChunksArray.push(processedChunk);
         }
-       
+    
         return processedChunksArray;
-    };
-
+    };    
+    
     const handleEncrypt = async () => {
         await processFiles(async (file) => {
-            const processedChunks = await handleProcessedChunks(file, async (chunk) => {
-                // 加密逻辑
-                return await fileProcessor.encryptChunk(chunk, password);
+            const processedChunks = await handleProcessedChunks(file, async (chunk, processor) => {
+                return await processor.encryptChunk(chunk, password);
             });
-
+    
             const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
             setDownloadQueue(queue => [...queue, { data: blob, fileName: `encrypted-${file.name}`, type: 'application/octet-stream' }]);
         });
-    };
+    };    
 
     const handleDecrypt = async () => {
         await processFiles(async (file) => {
-            const processedChunks = await handleProcessedChunks(file, async (chunk) => {
-                // 解密逻辑
-                return await fileProcessor.decryptChunk(chunk, password);
+            const processedChunks = await handleProcessedChunks(file, async (chunk, processor) => {
+                return await processor.decryptChunk(chunk, password);
             });
-
+    
             const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
             setDownloadQueue(queue => [...queue, { data: blob, fileName: file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`, type: 'application/octet-stream' }]);
         });
-    };
+    };    
 
     const handleDownloadQueue = () => {
         downloadQueue.forEach(item => {
