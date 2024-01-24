@@ -36,46 +36,6 @@ const FileUploader: React.FC = () => {
         }
     };
 
-    const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
-        const fileProcessor = new FileProcessor(file);
-        const processedChunksArray = await fileProcessor.processFile(processChunk);
-    
-        for (let i = 0; i < processedChunksArray.length; i++) {
-
-            setProgress((i + 1) / processedChunksArray.length * 100);
-        }
-       
-        return processedChunksArray;
-    };
-    
-    const handleEncrypt = async () => {
-        await processFiles(async (file) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                if (e.target && e.target.result) {
-                    const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
-                    const encrypted = encryptFile(base64, password);
-                    setDownloadQueue(queue => [...queue, { data: base64ToArrayBuffer(encrypted), fileName: `encrypted-${file.name}`, type: file.type }]);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
-    };
-
-    const handleDecrypt = async () => {
-        await processFiles(async (file) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                if (e.target && e.target.result) {
-                    const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
-                    const decryptedBase64 = decryptFile(base64, password); // 解密文件
-                    setDownloadQueue(queue => [...queue, { data: base64ToArrayBuffer(decryptedBase64), fileName: file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`, type: file.type }]);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
-    };
-
     const processFiles = async (processFunction: (file: File) => Promise<void>) => {
         setIsLoading(true);
         setError('');
@@ -91,11 +51,41 @@ const FileUploader: React.FC = () => {
         setIsLoading(false);
     };
 
-    const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
-        const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
-        setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
-    };      
+    const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
+        const fileProcessor = new FileProcessor(file);
+        const processedChunksArray = await fileProcessor.processFile(processChunk);
     
+        for (let i = 0; i < processedChunksArray.length; i++) {
+            setProgress((i + 1) / processedChunksArray.length * 100);
+        }
+       
+        return processedChunksArray;
+    };
+
+    const handleEncrypt = async () => {
+        await processFiles(async (file) => {
+            const processedChunks = await handleProcessedChunks(file, async (chunk) => {
+                // 加密逻辑
+                return await fileProcessor.encryptChunk(chunk, password);
+            });
+
+            const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
+            setDownloadQueue(queue => [...queue, { data: blob, fileName: `encrypted-${file.name}`, type: 'application/octet-stream' }]);
+        });
+    };
+
+    const handleDecrypt = async () => {
+        await processFiles(async (file) => {
+            const processedChunks = await handleProcessedChunks(file, async (chunk) => {
+                // 解密逻辑
+                return await fileProcessor.decryptChunk(chunk, password);
+            });
+
+            const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
+            setDownloadQueue(queue => [...queue, { data: blob, fileName: file.name.startsWith('encrypted-') ? file.name.replace('encrypted-', '') : `decrypted-${file.name}`, type: 'application/octet-stream' }]);
+        });
+    };
+
     const handleDownloadQueue = () => {
         downloadQueue.forEach(item => {
             const link = document.createElement('a');
@@ -116,22 +106,6 @@ const FileUploader: React.FC = () => {
         height: '5px',
         transition: 'width 0.5s ease-in-out'
     };
-
-    for (const file of selectedFiles) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            if (e.target && e.target.result) {
-                const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
-                const encrypted = encryptFile(base64, password);
-
-                const encryptedData = base64ToArrayBuffer(encrypted);
-                const encryptedBlob = new Blob([encryptedData], { type: file.type });
-
-                setDownloadQueue(queue => [...queue, { data: encryptedBlob, fileName: `encrypted-${file.name}`, type: file.type }]);
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
 
     return (
         <div className="p-4">
