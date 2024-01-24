@@ -94,7 +94,7 @@ const FileUploader: React.FC = () => {
     const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
         const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
         setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
-    };    
+    };      
     
     const handleDownloadQueue = () => {
         downloadQueue.forEach(item => {
