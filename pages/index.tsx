@@ -1,6 +1,6 @@
 import React from 'react';
 import FileUploader from '@components/FileUploader';
-import Footer from '@components/Footer';
+import { Footer } from '@components/Footer';
 
 const Home: React.FC = () => {
   return (
