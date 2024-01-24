@@ -53,15 +53,19 @@ const FileUploader: React.FC = () => {
 
     const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob, processor: FileProcessor) => Promise<ArrayBuffer>) => {
         const fileProcessor = new FileProcessor(file);
+        const chunks = fileProcessor.getChunks();
         const processedChunksArray = [];
+        let processedChunksCount = 0;
     
-        for (const chunk of fileProcessor.getChunks()) {
+        for (const chunk of chunks) {
             const processedChunk = await processChunk(chunk, fileProcessor);
             processedChunksArray.push(processedChunk);
+            processedChunksCount++;
+            setProgress((processedChunksCount / chunks.length) * 100);
         }
     
         return processedChunksArray;
-    };    
+    };       
     
     const handleEncrypt = async () => {
         await processFiles(async (file) => {
@@ -139,6 +143,9 @@ const FileUploader: React.FC = () => {
             </button>
             {isLoading && <p className="text-blue-500">Processing...</p>}
             {error && <p className="text-red-500">{error}</p>}
+            <div style={{ width: '100%', backgroundColor: '#ddd' }}>
+                <div style={{ height: '10px', width: `${progress}%`, backgroundColor: 'green' }}></div>
+            </div>
         </div>
     );
 };
