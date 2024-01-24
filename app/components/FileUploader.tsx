@@ -117,6 +117,21 @@ const FileUploader: React.FC = () => {
         transition: 'width 0.5s ease-in-out'
     };
 
+    for (const file of selectedFiles) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            if (e.target && e.target.result) {
+                const base64 = arrayBufferToBase64(e.target.result as ArrayBuffer);
+                const encrypted = encryptFile(base64, password);
+
+                // 将加密后的数据转换为 Blob 而不是 ArrayBuffer
+                const encryptedBlob = new Blob([base64ToArrayBuffer(encrypted)], { type: file.type });
+                setDownloadQueue(queue => [...queue, { data: encryptedBlob, fileName: `encrypted-${file.name}`, type: file.type }]);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
     return (
         <div className="p-4">
             <input className="border p-2 mb-2" type="file" multiple onChange={handleFileInput} />
