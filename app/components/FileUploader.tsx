@@ -112,28 +112,32 @@ const FileUploader: React.FC = () => {
 
     return (
         <div className="p-4">
-            <input className="border p-2 mb-2" type="file" multiple onChange={handleFileInput} />
-            <input
-                className="border p-2 mb-2"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                onClick={handleEncrypt}
-                disabled={isLoading}
-            >
-                Encrypt
-            </button>
-            <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                onClick={handleDecrypt}
-                disabled={isLoading}
-            >
-                Decrypt
-            </button>
+            <div className="p-4 mb-2">
+                <input className="border p-2" type="file" multiple onChange={handleFileInput} />
+            </div>
+            <div className="p-4">
+                <input
+                    className="border p-2 mb-2"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                    onClick={handleEncrypt}
+                    disabled={isLoading}
+                >
+                    Encrypt
+                </button>
+                <button
+                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={handleDecrypt}
+                    disabled={isLoading}
+                >
+                    Decrypt
+                </button>
+            </div>
             <button
                 className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
                 onClick={handleDownloadQueue}
