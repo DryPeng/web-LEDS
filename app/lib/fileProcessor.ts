@@ -51,4 +51,16 @@ export class FileProcessor {
     const decrypted = CryptoJS.AES.decrypt(wordArray, password).toString(CryptoJS.enc.Utf8);
     return CryptoJS.enc.Base64.parse(decrypted).toString(CryptoJS.enc.Utf8);
   }
+
+  public async processFile(processChunk: (chunk: Blob) => Promise<ArrayBuffer>): Promise<ArrayBuffer[]> {
+    const chunks = this.getChunks();
+    let processedChunks: ArrayBuffer[] = [];
+
+    for (const chunk of chunks) {
+        const processed = await processChunk(chunk);
+        processedChunks.push(processed);
+    }
+
+    return processedChunks;
+  }
 }

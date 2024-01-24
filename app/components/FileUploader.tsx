@@ -38,7 +38,7 @@ const FileUploader: React.FC = () => {
 
     const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
         const fileProcessor = new FileProcessor(file);
-        const chunks = fileProcessor.getChunks();
+        const processedChunks = await fileProcessor.getChunks();
         let processedChunks: ArrayBuffer[] = [];
 
         for (let i = 0; i < chunks.length; i++) {
