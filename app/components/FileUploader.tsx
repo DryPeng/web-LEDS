@@ -26,7 +26,7 @@ const FileUploader: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
-    const [downloadQueue, setDownloadQueue] = useState<{ data: ArrayBuffer; fileName: string; type: string }[]>([]);
+    const [downloadQueue, setDownloadQueue] = useState<{ data: Blob; fileName: string; type: string }[]>([]);
     const [progress, setProgress] = useState<number>(0);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
