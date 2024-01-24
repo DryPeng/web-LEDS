@@ -143,9 +143,12 @@ const FileUploader: React.FC = () => {
             </button>
             {isLoading && <p className="text-blue-500">Processing...</p>}
             {error && <p className="text-red-500">{error}</p>}
-            <div style={{ width: '100%', backgroundColor: '#ddd' }}>
-                <div style={{ height: '10px', width: `${progress}%`, backgroundColor: 'green' }}></div>
-            </div>
+            {isLoading && (
+                <div style={{ width: '100%', backgroundColor: '#ddd' }}>
+                    <div style={{ height: '10px', width: `${progress}%`, backgroundColor: 'green', transition: 'width 0.5s ease-in-out' }}></div>
+                </div>
+            )}
+
         </div>
     );
 };
