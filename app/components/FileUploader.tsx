@@ -38,17 +38,18 @@ const FileUploader: React.FC = () => {
 
     const handleProcessedChunks = async (file: File, processChunk: (chunk: Blob) => Promise<ArrayBuffer>) => {
         const fileProcessor = new FileProcessor(file);
-        const processedChunks = fileProcessor.getChunks();
-        let processedChunks: ArrayBuffer[] = [];
-
+        const chunks = fileProcessor.getChunks();
+        let processedChunksArray: ArrayBuffer[] = [];
+    
         for (let i = 0; i < chunks.length; i++) {
             const processedChunk = await processChunk(chunks[i]);
-            processedChunks.push(processedChunk);
+            processedChunksArray.push(processedChunk);
             setProgress((i + 1) / chunks.length * 100);
         }
-
-        return processedChunks;
+    
+        return processedChunksArray;
     };
+    
 
     const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
         const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
