@@ -48,14 +48,6 @@ const FileUploader: React.FC = () => {
         return processedChunksArray;
     };
     
-
-    const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
-        const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
-        const href = URL.createObjectURL(blob);
-    
-        setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
-    };
-
     const handleEncrypt = async () => {
         await processFiles(async (file) => {
             const reader = new FileReader();
@@ -83,6 +75,11 @@ const FileUploader: React.FC = () => {
             reader.readAsArrayBuffer(file);
         });
     };
+
+    const onEncryptionComplete = (processedChunks: ArrayBuffer[], fileName: string) => {
+        const blob = new Blob(processedChunks, { type: 'application/octet-stream' });
+        setDownloadQueue(queue => [...queue, { data: blob, fileName, type: 'application/octet-stream' }]);
+    };    
     
     const handleDownloadQueue = () => {
         downloadQueue.forEach(item => {
@@ -95,7 +92,6 @@ const FileUploader: React.FC = () => {
             URL.revokeObjectURL(link.href);
         });
     
-        // 清空下载队列
         setDownloadQueue([]);
     };
 
