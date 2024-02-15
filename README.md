@@ -11,7 +11,7 @@ Written in Next.js, this application implements local encryption/decryption righ
 
 - Local encryption/Local decryption
 - All types of files
-- In progress > Big size file and progress bar
+- Big size file and progress bar
 - In progress > Multiple file selection/download
 - In progress > CSS style 
 - In progress > Enter the verification code to decrypt specific files (in one html page and js confusion)
